@@ -50,6 +50,7 @@
     "@nuxt/schema": "^3.12.3",
     "@nuxtjs/color-mode": "^3.4.2",
     "@tailwindcss/vite": "4.0.0-alpha.17",
+    "@tanstack/vue-table": "^8.19.2",
     "@vueuse/core": "^10.11.0",
     "@vueuse/integrations": "^10.11.0",
     "defu": "^6.1.4",

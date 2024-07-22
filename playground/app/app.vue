@@ -40,6 +40,7 @@ const components = [
   'slideover',
   'slider',
   'switch',
+  'table',
   'tabs',
   'textarea',
   'toast',

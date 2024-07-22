@@ -11,5 +11,8 @@ export default {
   external: 'i-heroicons-arrow-up-right-20-solid',
   loading: 'i-heroicons-arrow-path-20-solid',
   minus: 'i-heroicons-minus-20-solid',
-  search: 'i-heroicons-magnifying-glass-20-solid'
+  search: 'i-heroicons-magnifying-glass-20-solid',
+  sortable: 'i-heroicons-arrows-up-down-20-solid',
+  sortAsc: 'i-heroicons-bars-arrow-up-20-solid',
+  sortDesc: 'i-heroicons-bars-arrow-down-20-solid'
 }

@@ -6,8 +6,6 @@ import _appConfig from '#build/app.config'
 import theme from '#build/ui/table'
 // import type { PartialString } from '../types/utils'
 import type { PaginationProps } from '../types'
-import type { map } from 'zod'
-// import { pagination } from '~/src/theme'
 
 const appConfig = _appConfig as AppConfig & { ui: { table: Partial<typeof theme> } }
 
@@ -39,7 +37,10 @@ const props = defineProps<TableProps>()
 
 const sortingState = ref<SortingState>([])
 
-// const rowSelection = ref<RowSelectionState>({})
+const rowSelection = ref<RowSelectionState>({
+  1: true,
+  2: true,
+})
 
 const paginationState = ref<PaginationState | null>( props.pagination ?
   {
@@ -74,17 +75,17 @@ const table = useVueTable({
     get sorting() {
       return sortingState.value
     },
-    // get rowSelection() {
-    //   return rowSelection.value
-    // }
+    get rowSelection() {
+      return rowSelection.value
+    }
   },
-  // enableRowSelection: true,
-  // onRowSelectionChange: updateOrValue => {
-  //   rowSelection.value =
-  //     typeof updateOrValue === 'function'
-  //       ? updateOrValue(rowSelection.value)
-  //       : updateOrValue
-  // },
+  enableRowSelection: true,
+  onRowSelectionChange: updateOrValue => {
+    rowSelection.value =
+      typeof updateOrValue === 'function'
+        ? updateOrValue(rowSelection.value)
+        : updateOrValue
+  },
   onSortingChange: updaterOrValue => {
     sortingState.value =
       typeof updaterOrValue === 'function'

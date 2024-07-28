@@ -22,11 +22,11 @@ const pagination = {
 }
 
 const columns = [
-  // {
-  //   id: 'select',
-  //   header: (table: any) => h(UCheckbox, { checked:table.getIsAllRowsSelected, indeterminate: table.getIsSomeRowsSelected, onChange: table.getToggleAllRowsSelectedHandler }),
-  //   cell: (row: any) => h(UCheckbox, { checked:row.getIsSelected(), onChange: () => {row.getToggleSelectedHandler()} })
-  // },
+  {
+    id: 'select',
+    header: (info: any) => h(UCheckbox, { 'model-value': info.table.getIsAllRowsSelected() ? info.table.getIsAllRowsSelected() : undefined, indeterminate: info.table.getIsSomeRowsSelected(), onChange: info.table.getToggleAllRowsSelectedHandler() }),
+    cell: (info: any) => h(UCheckbox, { 'model-value': info.row.getIsSelected(), onChange: info.row.getToggleSelectedHandler()} )
+  },
   {
     accessorKey: 'avatar.src',
     header: () => null,

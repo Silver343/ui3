@@ -15,6 +15,7 @@ export interface TableProps extends Partial<Pick<CoreOptions, 'columns' | 'data'
     class?: any
     pagination?: PaginationProps
     selectable?: boolean
+    searchable?: boolean
     // ui?: PartialString<typeof table.slots>
 }
 
@@ -32,11 +33,20 @@ export interface ColumnProps {
 import { ref, h } from 'vue'
 import { UCheckbox } from '#components'
 import type {SortingState, PaginationState, RowSelectionState} from '@tanstack/vue-table'
-import { useVueTable, FlexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel } from '@tanstack/vue-table'
+import {
+  useVueTable,
+  FlexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+} from '@tanstack/vue-table'
 
 const props = defineProps<TableProps>()
 
 const sortingState = ref<SortingState>([])
+
+const filter = ref('')
 
 const rowSelection = ref<RowSelectionState>({
   1: true,
@@ -78,7 +88,9 @@ const table = useVueTable({
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
+  getFilteredRowModel: getFilteredRowModel(),
   enableRowSelection: props.selectable,
+  enablFilters: props.searchable,
   initialState: {
     get pagination() {
       return paginationState.value
@@ -90,7 +102,10 @@ const table = useVueTable({
     },
     get rowSelection() {
       return rowSelection.value
-    }
+    },
+    get globalFilter() {
+      return filter.value
+    },
   },
   onRowSelectionChange: updateOrValue => {
     rowSelection.value =
@@ -108,8 +123,8 @@ const table = useVueTable({
 </script>
 
 <template>
-  {{ rowSelection }}
   <div class="relative overflow-x-auto">
+    <UInput v-if="searchable" autofocus placeholder="Search..." v-model="filter"/>
     <table class="min-w-full dividie-y divide-gray-300 dark:divide-gray-700">
       <thead class="relatve">
         <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">

@@ -29,7 +29,8 @@ export interface ColumnProps {
 </script>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, h } from 'vue'
+import { UCheckbox } from '#components'
 import type {SortingState, PaginationState, RowSelectionState} from '@tanstack/vue-table'
 import { useVueTable, FlexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel } from '@tanstack/vue-table'
 
@@ -58,7 +59,18 @@ function setSortingState(column) {
   return column
 }
 
+
 const columns = props.columns.map((column) => setSortingState(column))
+
+if(props.selectable) {
+  columns.splice(0,0,
+    {
+      id: 'select',
+      header: (info: any) => h(UCheckbox, { 'model-value': info.table.getIsAllRowsSelected() ? info.table.getIsAllRowsSelected() : undefined, indeterminate: info.table.getIsSomeRowsSelected(), onChange: info.table.getToggleAllRowsSelectedHandler() }),
+      cell: (info: any) => h(UCheckbox, { 'model-value': info.row.getIsSelected(), onChange: info.row.getToggleSelectedHandler()} )
+    },
+  )
+}
 
 const table = useVueTable({
   data: props.data,
@@ -66,6 +78,7 @@ const table = useVueTable({
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
+  enableRowSelection: props.selectable,
   initialState: {
     get pagination() {
       return paginationState.value
@@ -79,7 +92,6 @@ const table = useVueTable({
       return rowSelection.value
     }
   },
-  enableRowSelection: true,
   onRowSelectionChange: updateOrValue => {
     rowSelection.value =
       typeof updateOrValue === 'function'
@@ -96,6 +108,7 @@ const table = useVueTable({
 </script>
 
 <template>
+  {{ rowSelection }}
   <div class="relative overflow-x-auto">
     <table class="min-w-full dividie-y divide-gray-300 dark:divide-gray-700">
       <thead class="relatve">

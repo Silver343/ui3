@@ -13,7 +13,6 @@ const { data: users } = await useFetch('https://jsonplaceholder.typicode.com/use
 
 const items = ref(users)
 
-
 const pagination = {
   page: 1,
   itemsPerPage: 2,
@@ -22,11 +21,6 @@ const pagination = {
 }
 
 const columns = [
-  {
-    id: 'select',
-    header: (info: any) => h(UCheckbox, { 'model-value': info.table.getIsAllRowsSelected() ? info.table.getIsAllRowsSelected() : undefined, indeterminate: info.table.getIsSomeRowsSelected(), onChange: info.table.getToggleAllRowsSelectedHandler() }),
-    cell: (info: any) => h(UCheckbox, { 'model-value': info.row.getIsSelected(), onChange: info.row.getToggleSelectedHandler()} )
-  },
   {
     accessorKey: 'avatar.src',
     header: () => null,
@@ -55,5 +49,5 @@ const columns = [
 </script>
 
 <template>
-  <UTable :data="items" :columns="columns"/>
+  <UTable :data="items" :columns="columns" selectable />
 </template>

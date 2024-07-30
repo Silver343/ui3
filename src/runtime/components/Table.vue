@@ -14,7 +14,7 @@ const table = tv({ extend: tv(theme), ...(appConfig.ui?.table || {}) })
 export interface TableProps extends Partial<Pick<CoreOptions, 'columns' | 'data'>> {
     class?: any
     pagination?: PaginationProps
-    selectable?: boolean
+    selected?: object
     searchable?: boolean
     // ui?: PartialString<typeof table.slots>
 }
@@ -25,7 +25,7 @@ export interface ColumnProps {
     accessKey?: string | number
     accessFn?: any
     cell?: any
-    enableSorting: { default: false, type: boolean}
+    enableSorting?: boolean
 }
 </script>
 
@@ -48,10 +48,7 @@ const sortingState = ref<SortingState>([])
 
 const filter = ref('')
 
-const rowSelection = ref<RowSelectionState>({
-  1: true,
-  2: true,
-})
+const rowSelection = ref<RowSelectionState>(props.selected)
 
 const paginationState = ref<PaginationState | null>( props.pagination ?
   {
@@ -72,13 +69,13 @@ function setSortingState(column) {
 
 const columns = props.columns.map((column) => setSortingState(column))
 
-if(props.selectable) {
+if(props.selected) {
   columns.splice(0,0,
     {
       id: 'select',
       header: ({table}) => h(UCheckbox, {
-        'model-value': table.getIsAllRowsSelected() ? table.getIsAllRowsSelected() : undefined,
-        indeterminate: table.getIsSomeRowsSelected(),
+        'model-value': table.getIsAllPageRowsSelected() ? table.getIsAllPageRowsSelected() : undefined,
+        indeterminate: table.getIsSomePageRowsSelected(),
         'onUpdate:modelValue': value => table.toggleAllPageRowsSelected(value),
       }),
       cell: ({row}) => h(UCheckbox, {
@@ -96,7 +93,7 @@ const table = useVueTable({
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
-  enableRowSelection: props.selectable,
+  enableRowSelection: props.selected,
   enablFilters: props.searchable,
   initialState: {
     get pagination() {
@@ -130,6 +127,7 @@ const table = useVueTable({
 </script>
 
 <template>
+  {{ rowSelection }}
   <div class="relative overflow-x-auto">
     <UInput v-if="searchable" autofocus placeholder="Search..." v-model="filter"/>
     <table class="min-w-full dividie-y divide-gray-300 dark:divide-gray-700">

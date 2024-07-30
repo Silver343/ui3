@@ -15,7 +15,7 @@ const items = ref(users)
 
 const pagination = {
   page: 1,
-  itemsPerPage: 2,
+  itemsPerPage: 5,
   siblingCount: 1,
   showEdges: true
 }
@@ -46,8 +46,13 @@ const columns = [
     ]
   }
 ]
+
+const selected = {
+  1: true,
+  3: true,
+}
 </script>
 
 <template>
-  <UTable :data="items" :columns="columns" searchable selectable />
+  <UTable :data="items" :columns="columns" searchable :selected="selected" :pagination="pagination" />
 </template>

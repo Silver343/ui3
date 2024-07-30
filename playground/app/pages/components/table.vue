@@ -49,5 +49,5 @@ const columns = [
 </script>
 
 <template>
-  <UTable :data="items" :columns="columns" searchable/>
+  <UTable :data="items" :columns="columns" searchable selectable />
 </template>

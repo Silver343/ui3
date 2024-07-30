@@ -76,8 +76,15 @@ if(props.selectable) {
   columns.splice(0,0,
     {
       id: 'select',
-      header: (info: any) => h(UCheckbox, { 'model-value': info.table.getIsAllRowsSelected() ? info.table.getIsAllRowsSelected() : undefined, indeterminate: info.table.getIsSomeRowsSelected(), onChange: info.table.getToggleAllRowsSelectedHandler() }),
-      cell: (info: any) => h(UCheckbox, { 'model-value': info.row.getIsSelected(), onChange: info.row.getToggleSelectedHandler()} )
+      header: ({table}) => h(UCheckbox, {
+        'model-value': table.getIsAllRowsSelected() ? table.getIsAllRowsSelected() : undefined,
+        indeterminate: table.getIsSomeRowsSelected(),
+        'onUpdate:modelValue': value => table.toggleAllPageRowsSelected(value),
+      }),
+      cell: ({row}) => h(UCheckbox, {
+        'model-value': row.getIsSelected(),
+        onChange: row.getToggleSelectedHandler(),
+      })
     },
   )
 }

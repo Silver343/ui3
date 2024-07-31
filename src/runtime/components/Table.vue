@@ -5,7 +5,7 @@ import type { Table, SortingState, PaginationState, RowSelectionState, ColumnDef
 import _appConfig from '#build/app.config'
 import theme from '#build/ui/table'
 // import type { PartialString } from '../types/utils'
-import type { PaginationProps } from '../types'
+import type { PaginationProps, ProgressProps } from '../types'
 
 const appConfig = _appConfig as AppConfig & { ui: { table: Partial<typeof theme> } }
 
@@ -18,6 +18,9 @@ export interface TableProps {
   selected?: RowSelectionState
   searchable?: boolean
   emptyState?: emptyStateProps | null
+  loading?: boolean
+  progress?: ProgressProps | null
+  loadingState?: loadingStateProps | null
   class?: any
   // ui?: PartialString<typeof table.slots>
 }
@@ -27,6 +30,11 @@ export interface ColumnProps <TData> extends ColumnDef<TData>{
 }
 
 export interface emptyStateProps {
+  icon: string
+  label: string
+}
+
+export interface loadingStateProps {
   icon: string
   label: string
 }
@@ -48,6 +56,13 @@ const props = withDefaults(defineProps<TableProps>(), {
   emptyState: () => ({
     icon: appConfig.ui.icons.empty,
     label: 'No items.'
+  }),
+  loadingState: () => ({
+    icon: appConfig.ui.icons.loading,
+    label: 'Loading...'
+  }),
+  progress: () => ({
+    size: '2xs'
   })
 })
 
@@ -151,17 +166,36 @@ const table = useVueTable({
             </template>
           </th>
         </tr>
+        <tr v-if="loading && progress">
+          <td colspan="0" class="absolute inset-x-0 -bottom-[0.5px] p-0">
+            <UProgress  v-bind="progress"/>
+          </td>
+        </tr>
       </thead>
       <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
-        <tr v-if="!data.length && emptyState !== null">
-          <div class="flex flex-col items-center justify-center flex-1 px-6 py-14 sm:px-14">
-            <slot name="empty-state">
-              <UIcon class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4" :name="emptyState.icon" />
-              <p class="text-sm text-center text-gray-900 dark:text-white">
-                {{ emptyState.label }}
-              </p>
-            </slot>
-          </div>
+        <tr v-if="!data.length && loadingState !== null && loading">
+          <td :colspan="columns.length">
+            <div class="flex flex-col items-center justify-center flex-1 px-6 py-14 sm:px-14">
+              <slot name="loading-state">
+                <UIcon class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4" :name="loadingState.icon" />
+                <p class="text-sm text-center text-gray-900 dark:text-white">
+                  {{ loadingState.label }}
+                </p>
+              </slot>
+            </div>
+          </td>
+        </tr>
+        <tr v-else-if="!data.length && emptyState !== null">
+          <td :colspan="columns.length">
+            <div class="flex flex-col items-center justify-center flex-1 px-6 py-14 sm:px-14">
+              <slot name="empty-state">
+                <UIcon class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-4" :name="emptyState.icon" />
+                <p class="text-sm text-center text-gray-900 dark:text-white">
+                  {{ emptyState.label }}
+                </p>
+              </slot>
+            </div>
+          </td>
         </tr>
         <template v-else>
           <tr v-for="row in table.getRowModel().rows" :key="row.id">

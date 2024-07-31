@@ -3,7 +3,7 @@ import type { User } from '~/types'
 import { ref, h } from 'vue'
 import UAvatar from '../../../../src/runtime/components/Avatar.vue'
 
-const { data: users } = await useFetch('https://jsonplaceholder.typicode.com/users', {
+const {status, data: users } = await useFetch('https://jsonplaceholder.typicode.com/users', {
   transform: (data: User[]) => {
     return data?.map(user => ({ name: user.name, id: user.id, email: user.email, phone: user.phone, avatar: { src: `https://i.pravatar.cc/120?img=${user.id}` } })) || []
   },
@@ -53,7 +53,8 @@ const selected = {
 </script>
 
 <template>
-  <UTable :data="items" :columns="columns" searchable :selected="selected" :pagination="pagination">
+  {{ status }}
+  <UTable :data="items" :columns="columns" searchable :selected="selected" :pagination="pagination" :loading="status === 'pending'">
     <template #empty-state>
       empty
     </template>

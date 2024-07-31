@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { User } from '~/types'
-import { ref, h} from 'vue'
-import UAvatar  from '../../../../src/runtime/components/Avatar.vue';
-import UCheckbox from '../../../../src/runtime/components/Checkbox.vue'
+import { ref, h } from 'vue'
+import UAvatar from '../../../../src/runtime/components/Avatar.vue'
 
 const { data: users } = await useFetch('https://jsonplaceholder.typicode.com/users', {
   transform: (data: User[]) => {
@@ -24,7 +23,7 @@ const columns = [
   {
     accessorKey: 'avatar.src',
     header: () => null,
-    cell: (info: any) => h(UAvatar, { src:info.getValue(), size:'lg' })
+    cell: (info: any) => h(UAvatar, { src: info.getValue(), size: 'lg' })
   },
   {
     accessorKey: 'name',
@@ -41,18 +40,22 @@ const columns = [
       },
       {
         accessorKey: 'phone',
-        header: 'Phone Number',
-      },
+        header: 'Phone Number'
+      }
     ]
   }
 ]
 
 const selected = {
   1: true,
-  3: true,
+  3: true
 }
 </script>
 
 <template>
-  <UTable :data="items" :columns="columns" searchable :selected="selected" :pagination="pagination" />
+  <UTable :data="items" :columns="columns" searchable :selected="selected" :pagination="pagination">
+    <template #empty-state>
+      empty
+    </template>
+  </UTable>
 </template>

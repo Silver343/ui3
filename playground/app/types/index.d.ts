@@ -4,6 +4,6 @@ export interface User {
   email: string
   phone: string
   avatar: {
-    src : string
+    src: string
   }
 }

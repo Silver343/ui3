@@ -4,44 +4,42 @@ import type { AppConfig } from '@nuxt/schema'
 import type { Table, SortingState, PaginationState, RowSelectionState, ColumnDef } from '@tanstack/vue-table'
 import _appConfig from '#build/app.config'
 import theme from '#build/ui/table'
-// import type { PartialString } from '../types/utils'
 import type { PaginationProps, ProgressProps } from '../types'
 
 const appConfig = _appConfig as AppConfig & { ui: { table: Partial<typeof theme> } }
 
 const table = tv({ extend: tv(theme), ...(appConfig.ui?.table || {}) })
 
-export interface TableProps {
+export interface TableProps<TData> {
   data: TData[]
   columns: ColumnProps<TData>[]
   pagination?: PaginationProps
   selected?: RowSelectionState
   search?: string
-  emptyState?: emptyStateProps | null
+  emptyState?: EmptyStateProps | null
   loading?: boolean
   progress?: ProgressProps | null
-  loadingState?: loadingStateProps | null
+  loadingState?: LoadingStateProps | null
   class?: any
-  // ui?: PartialString<typeof table.slots>
 }
 
-export interface ColumnProps <TData> extends ColumnDef<TData>{
+export interface ColumnProps<TData> extends ColumnDef<TData> {
   enableSorting?: boolean
 }
 
-export interface emptyStateProps {
+export interface EmptyStateProps {
   icon: string
   label: string
 }
 
-export interface loadingStateProps {
+export interface LoadingStateProps {
   icon: string
   label: string
 }
 </script>
 
 <script setup lang="ts" generic="TData extends any">
-import { ref, h } from 'vue'
+import { ref, h, computed } from 'vue'
 import { UCheckbox } from '#components'
 import {
   useVueTable,
@@ -52,7 +50,7 @@ import {
   getFilteredRowModel
 } from '@tanstack/vue-table'
 
-const props = withDefaults(defineProps<TableProps>(), {
+const props = withDefaults(defineProps<TableProps<TData>>(), {
   emptyState: () => ({
     icon: appConfig.ui.icons.empty,
     label: 'No items.'
@@ -68,21 +66,24 @@ const props = withDefaults(defineProps<TableProps>(), {
 
 const sortingState = ref<SortingState>([])
 
-const rowSelection = ref(props.selected)
+const rowSelection = ref<RowSelectionState | undefined>(props.selected)
 
-const paginationState = ref(props.pagination
+const paginationState = computed<PaginationState | undefined>(() => {
+  return !!props.pagination
   ? {
       pageIndex: props.pagination.page - 1,
       pageSize: props.pagination.itemsPerPage
     }
-  : null
-)
+  : undefined
+})
+console.log(paginationState.value)
 
-function setSortingState(column: ColumnProps<TData>) {
+function setSortingState(column: ColumnProps<TData>): ColumnProps<TData> {
   if ('columns' in column) {
-    column['columns'].map(column => setSortingState(column))
-  } else
+    column['columns'].map(col => setSortingState(col))
+  } else {
     column['enableSorting'] = column['enableSorting'] ?? false
+  }
   return column
 }
 
@@ -105,15 +106,14 @@ if (props.selected) {
   )
 }
 
-const table = useVueTable({
+const table = useVueTable<TData>({
   data: props.data,
   columns: columns,
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
-  enableRowSelection: props.selected !== undefined,
-  enablFilters: props.search,
+  enableRowSelection: !!props.selected,
   initialState: {
     get pagination() {
       return paginationState.value
@@ -147,8 +147,8 @@ const table = useVueTable({
 
 <template>
   <div class="relative overflow-x-auto">
-    <table class="min-w-full dividie-y divide-gray-300 dark:divide-gray-700">
-      <thead class="relatve">
+    <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+      <thead class="relative">
         <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
           <th v-for="header in headerGroup.headers" :key="header.id" class="text-left rtl:text-right px-4 py-3.5 text-gray-900 dark:text-white font-semibold text-sm" :colSpan="header.colSpan" @click="header.column.getToggleSortingHandler()?.($event)">
             <template v-if="!header.isPlaceholder">
@@ -219,7 +219,7 @@ const table = useVueTable({
         <template #prev>
           <UButton :disabled="!table.getCanPreviousPage()" color="gray" variant="outline" :icon="appConfig.ui.icons.chevronLeft" @click="table.previousPage()" />
         </template>
-        <template #item="{ item, page }: {item: {type: 'page'; value: number},page : number}">
+        <template #item="{ item, page }: {item: {type: 'page'; value: number}, page: number}">
           <UButton
             color='gray'
             :variant="page === item.value ? 'solid' : 'outline'"

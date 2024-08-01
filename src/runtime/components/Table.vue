@@ -16,7 +16,7 @@ export interface TableProps {
   columns: ColumnProps<TData>[]
   pagination?: PaginationProps
   selected?: RowSelectionState
-  searchable?: boolean
+  search?: string
   emptyState?: emptyStateProps | null
   loading?: boolean
   progress?: ProgressProps | null
@@ -68,8 +68,6 @@ const props = withDefaults(defineProps<TableProps>(), {
 
 const sortingState = ref<SortingState>([])
 
-const filter = ref('')
-
 const rowSelection = ref(props.selected)
 
 const paginationState = ref(props.pagination
@@ -115,7 +113,7 @@ const table = useVueTable({
   getSortedRowModel: getSortedRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
   enableRowSelection: props.selected !== undefined,
-  enablFilters: props.searchable,
+  enablFilters: props.search,
   initialState: {
     get pagination() {
       return paginationState.value
@@ -129,7 +127,7 @@ const table = useVueTable({
       return rowSelection.value
     },
     get globalFilter() {
-      return filter.value
+      return props.search
     }
   },
   onRowSelectionChange: (updateOrValue) => {
@@ -149,7 +147,6 @@ const table = useVueTable({
 
 <template>
   <div class="relative overflow-x-auto">
-    <UInput v-if="searchable" v-model="filter" autofocus placeholder="Search..." />
     <table class="min-w-full dividie-y divide-gray-300 dark:divide-gray-700">
       <thead class="relatve">
         <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">

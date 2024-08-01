@@ -50,11 +50,13 @@ const selected = {
   1: true,
   3: true
 }
+
+const search = ref('')
 </script>
 
 <template>
-  {{ status }}
-  <UTable :data="items" :columns="columns" searchable :selected="selected" :pagination="pagination" :loading="status === 'pending'">
+  <UInput v-model="search" autofocus placeholder="Search..." />
+  <UTable :data="items" :columns="columns" :search="search" :selected="selected" :pagination="pagination" :loading="status === 'pending'">
     <template #empty-state>
       empty
     </template>

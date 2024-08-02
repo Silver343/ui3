@@ -4,17 +4,16 @@ import { ref, h } from 'vue'
 import UAvatar from '../../../../src/runtime/components/Avatar.vue'
 
 const {status, data: users } = await useFetch('https://jsonplaceholder.typicode.com/users', {
+const { status, data: users } = await useFetch('https://jsonplaceholder.typicode.com/users', {
   transform: (data: User[]) => {
     return data?.map(user => ({ name: user.name, id: user.id, email: user.email, phone: user.phone, avatar: { src: `https://i.pravatar.cc/120?img=${user.id}` } })) || []
   },
   lazy: true
 })
 
-const items = ref(users)
-
 const pagination = {
   page: 1,
-  itemsPerPage: 5,
+  itemsPerPage: 3,
   siblingCount: 1,
   showEdges: true
 }
@@ -56,7 +55,14 @@ const search = ref('')
 
 <template>
   <UInput v-model="search" autofocus placeholder="Search..." />
-  <UTable :data="items" :columns="columns" :search="search" :selected="selected" :pagination="pagination" :loading="status === 'pending'">
+  <UTable
+    :data="users"
+    :columns="columns"
+    :search="search"
+    :selected="selected"
+    :pagination="pagination"
+    :loading="status === 'pending'"
+  >
     <template #empty-state>
       empty
     </template>

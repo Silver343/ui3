@@ -21,9 +21,10 @@ export interface TableProps<TData> {
   progress?: ProgressProps | null
   loadingState?: LoadingStateProps | null
   class?: any
+  ui?: Partial<typeof table.slots>
 }
 
-export interface ColumnProps<TData> extends ColumnDef<TData> {
+export type ColumnProps<TData> = ColumnDef<TData> & {
   enableSorting?: boolean
 }
 
@@ -40,7 +41,7 @@ export interface LoadingStateProps {
 
 <script setup lang="ts" generic="TData extends any">
 import { ref, h, computed } from 'vue'
-import { UCheckbox } from '#components'
+import { UCheckbox, UPagination } from '#components'
 import {
   useVueTable,
   FlexRender,
@@ -69,14 +70,13 @@ const sortingState = ref<SortingState>([])
 const rowSelection = ref<RowSelectionState | undefined>(props.selected)
 
 const paginationState = computed<PaginationState | undefined>(() => {
-  return !!props.pagination
-  ? {
-      pageIndex: props.pagination.page - 1,
-      pageSize: props.pagination.itemsPerPage
-    }
-  : undefined
+  return props.pagination
+    ? {
+        pageIndex: props.pagination.page - 1,
+        pageSize: props.pagination.itemsPerPage
+      }
+    : undefined
 })
-console.log(paginationState.value)
 
 function setSortingState(column: ColumnProps<TData>): ColumnProps<TData> {
   if ('columns' in column) {
@@ -90,10 +90,10 @@ function setSortingState(column: ColumnProps<TData>): ColumnProps<TData> {
 const columns = props.columns.map(column => setSortingState(column))
 
 if (props.selected) {
-  columns.splice(0, 0,
+  columns.unshift(
     {
       id: 'select',
-      header: ({ table }) => h(UCheckbox, {
+      header: ({ table }: { table: Table<TData> }) => h(UCheckbox, {
         'model-value': table.getIsAllPageRowsSelected() ? table.getIsAllPageRowsSelected() : undefined,
         'indeterminate': table.getIsSomePageRowsSelected(),
         'onUpdate:modelValue': value => table.toggleAllPageRowsSelected(value)
@@ -106,14 +106,14 @@ if (props.selected) {
   )
 }
 
-const table = useVueTable<TData>({
+const tableModel = useVueTable<TData>({
   data: props.data,
   columns: columns,
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
-  enableRowSelection: !!props.selected,
+  enableRowSelection: props.selected !== undefined,
   initialState: {
     get pagination() {
       return paginationState.value
@@ -149,7 +149,7 @@ const table = useVueTable<TData>({
   <div class="relative overflow-x-auto">
     <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
       <thead class="relative">
-        <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+        <tr v-for="headerGroup in tableModel.getHeaderGroups()" :key="headerGroup.id">
           <th v-for="header in headerGroup.headers" :key="header.id" class="text-left rtl:text-right px-4 py-3.5 text-gray-900 dark:text-white font-semibold text-sm" :colSpan="header.colSpan" @click="header.column.getToggleSortingHandler()?.($event)">
             <template v-if="!header.isPlaceholder">
               <div class="align-baseline">
@@ -165,7 +165,7 @@ const table = useVueTable<TData>({
         </tr>
         <tr v-if="loading && progress">
           <td colspan="0" class="absolute inset-x-0 -bottom-[0.5px] p-0">
-            <UProgress  v-bind="progress"/>
+            <UProgress v-bind="progress" />
           </td>
         </tr>
       </thead>
@@ -195,7 +195,7 @@ const table = useVueTable<TData>({
           </td>
         </tr>
         <template v-else>
-          <tr v-for="row in table.getRowModel().rows" :key="row.id">
+          <tr v-for="row in tableModel.getRowModel().rows" :key="row.id">
             <td v-for="cell in row.getVisibleCells()" :key="cell.id" class="whitespace-nowrap px-4 py-4 text-gray-500 dark:text-gray-400 text-sm border-r border-gray-300">
               <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
             </td>
@@ -206,7 +206,6 @@ const table = useVueTable<TData>({
     <div>
       <UPagination
         v-if="pagination"
-        v-model:page="pagination.page"
         class="mt-8"
         :items-per-page="pagination.itemsPerPage"
         :total="data.length"
@@ -214,25 +213,24 @@ const table = useVueTable<TData>({
         :show-edges="pagination.showEdges"
       >
         <template #first>
-          <UButton :disabled="!table.getCanPreviousPage()" color="gray" variant="outline" :icon="appConfig.ui.icons.chevronDoubleLeft" @click="table.setPageIndex(0)" />
+          <UButton :disabled="!tableModel.getCanPreviousPage()" color="gray" variant="outline" :icon="appConfig.ui.icons.chevronDoubleLeft" @click="tableModel.setPageIndex(0)" />
         </template>
         <template #prev>
-          <UButton :disabled="!table.getCanPreviousPage()" color="gray" variant="outline" :icon="appConfig.ui.icons.chevronLeft" @click="table.previousPage()" />
+          <UButton :disabled="!tableModel.getCanPreviousPage()" color="gray" variant="outline" :icon="appConfig.ui.icons.chevronLeft" @click="tableModel.previousPage()" />
         </template>
         <template #item="{ item, page }: {item: {type: 'page'; value: number}, page: number}">
           <UButton
-            color='gray'
+            color="gray"
             :variant="page === item.value ? 'solid' : 'outline'"
             :label="String(item.value)"
-            square
-            @click="table.setPageIndex(item.value - 1)"
+            @click="tableModel.setPageIndex(item.value - 1)"
           />
         </template>
         <template #next>
-          <UButton :disabled="!table.getCanNextPage()" color="gray" variant="outline" :icon="appConfig.ui.icons.chevronRight" @click="table.nextPage()" />
+          <UButton :disabled="!tableModel.getCanNextPage()" color="gray" variant="outline" :icon="appConfig.ui.icons.chevronRight" @click="tableModel.nextPage()" />
         </template>
         <template #last>
-          <UButton :disabled="!table.getCanNextPage()" color="gray" variant="outline" :icon="appConfig.ui.icons.chevronDoubleRight" @click="table.setPageIndex(table.getPageCount()-1)" />
+          <UButton :disabled="!tableModel.getCanNextPage()" color="gray" variant="outline" :icon="appConfig.ui.icons.chevronDoubleRight" @click="tableModel.setPageIndex(tableModel.getPageCount()-1)" />
         </template>
       </UPagination>
     </div>
